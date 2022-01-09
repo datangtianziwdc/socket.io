@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- 引入socket.io -->
+    <!-- <script type="module" src="/socket.io/socket.io.js"></script> -->
+    <!-- 引入Vue -->
+    <script src="//vuejs.org/js/vue.min.js"></script>
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="//unpkg.com/iview/dist/styles/iview.css">
+    <!-- 引入组件库 -->
+    <script src="//unpkg.com/iview/dist/iview.min.js"></script>
+    <title>Document</title>
+    <style>
+        body,
+        html {
+            height: 100%;
+            width: 100%;
+            background-color: rgb(119, 149, 238);
+        }
+
+        .marginB {
+            margin-bottom: 40px;
+        }
+
+        #app {
+            width: 80%;
+            height: 80%;
+            position: relative;
+            left: 10%;
+            top: 10%;
+        }
+
+        .login {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            background-color: white;
+            padding: 10%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-evenly;
+        }
+
+        .avatars {
+            display: flex;
+            width: 100%;
+            position: relative;
+            justify-content: space-between;
+        }
+
+        .avatars .avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            margin-right: 10px;
+            /* box-sizing: border-box; */
+        }
+
+        .avatars .active {
+            border: 2px solid rgb(9, 236, 66);
+        }
+
+        .font10 {
+            font-size: 10px;
+        }
+
+        .room {
+            width: 100%;
+            height: 100%;
+            display: flex;
+        }
+
+        .userList {
+            width: 35%;
+            background-color: white;
+            height: 100%;
+            border-right: 2px solid rgb(226, 214, 214);
+            padding: 20px;
+            padding-top: 10px;
+            padding-bottom: 10px;
+            overflow-y: auto;
+        }
+
+        .chatList {
+            width: 65%;
+            background-color: white;
+            height: 100%;
+            padding: 20px;
+            padding-top: 10px;
+            padding-bottom: 10px;
+        }
+
+        .userList .item {
+            display: flex;
+            align-items: center;
+            padding-top: 5px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid rgb(226, 214, 214);
+        }
+
+        .userList .item .avatar {
+            height: 36px;
+            width: 36px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        .userList .item1 .avatar {
+            height: 36px;
+            width: 36px;
+            border-radius: 50%;
+        }
+
+        .chatList .item {
+            display: flex;
+            align-items: flex-start;
+            padding-top: 5px;
+            padding-bottom: 5px;
+            margin-right: 45px;
+        }
+
+        .chatList .item1 {
+            display: flex;
+            align-items: flex-start;
+            padding-top: 5px;
+            padding-bottom: 5px;
+            margin-left: 45px;
+        }
+
+        .chatList .item .content {
+            position: relative;
+            background-color: rgb(85, 198, 233);
+            color: white;
+            padding: 5px;
+            border-radius: 5px;
+        }
+
+        .chatList .item1 .content1 {
+            position: relative;
+            background-color: rgb(85, 198, 233);
+            color: white;
+            padding: 5px;
+            border-radius: 5px;
+        }
+
+        .chatList .item1 .content1::after {
+            content: '';
+            width: 0;
+            height: 0;
+            border-top: 5px solid transparent;
+            border-left: 8px solid rgb(85, 198, 233);
+            border-bottom: 5px solid transparent;
+            position: absolute;
+            top: 50%;
+            right: -8px;
+            transform: translateY(-50%);
+        }
+
+        .chatList .item .content::after {
+            content: '';
+            width: 0;
+            height: 0;
+            border-top: 5px solid transparent;
+            border-right: 8px solid rgb(85, 198, 233);
+            border-bottom: 5px solid transparent;
+            position: absolute;
+            top: 50%;
+            left: -8px;
+            transform: translateY(-50%);
+        }
+
+        .chatList .item .avatar {
+            height: 36px;
+            width: 36px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        .chatList .item1 .avatar {
+            height: 36px;
+            width: 36px;
+            border-radius: 50%;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <!-- 登录页面 -->
+        <template v-if="isLogin">
+            <div class="login">
+                <div>请输入您的昵称:</div>
+                <i-input v-model="userInfo.nickname" placeholder="请输入昵称" class="marginB"></i-input>
+                <div>请输选择您的头像:</div>
+                <div class="avatars marginB">
+                    <image :class="checkIndex==index?'avatar active':'avatar'" v-for="(item,index) in avatarList"
+                        :key="index" :src="item" @click="chooseAvatar(item,index)"></image>
+                </div>
+                <i-button type="success" @click="addRoom" style="width: 100%;">加入聊天室</i-button>
+            </div>
+        </template>
+        <template v-else>
+            <div class="room">
+                <div class="userList">
+                    <div class="item">
+                        聊天室成员列表
+                    </div>
+                    <div v-for="(item,index) in userList" class="item">
+                        <image :src="item.avatar" class="avatar">
+                        </image>
+                        <div>{{item.nickname}}</div>
+                    </div>
+                </div>
+                <div class="chatList">
+                    <div class="item">
+                        文明发言
+                    </div>
+                    <div v-for="(item,index) in chatList">
+                        <template v-if="item.id===2">
+                            <div class="item">
+                                <image :src="item.avatar" class="avatar">
+                                </image>
+                                <div>
+                                    <div class="font10">{{item.name}}</div>
+                                    <div class="content">{{item.content}}</div>
+                                </div>
+                            </div>
+                        </template>
+                        <template v-else-if="item.id===1">
+                            <div class="item1">
+                                <div style="display: flex;flex-direction: column;align-items: flex-end;">
+                                    <div class="font10">{{item.name}}</div>
+                                    <div class="content1">{{item.content}}</div>
+                                </div>
+                                <image :src="item.avatar" class="avatar">
+                                </image>
+                            </div>
+                        </template>
+                        <template v-else>
+                            <div style="display: flex;justify-content: center;">
+                                -----------------{{item.name}}-----------------
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </div>
+        </template>
+    </div>
+    <script type="module">
+        import * as socket from './common/socket.io.js'
+        new Vue({
+            el: '#app',
+            data: {
+                isLogin: true,
+                socket: io(),
+                userInfo: {
+                    nickname: "",
+                    avatar: ""
+                },
+                // 聊天记录
+                chatList: [
+                //     {
+                //     id: 1,
+                //     name: "王大锤",
+                //     content: "哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈",
+                //     avatar: "https://img0.baidu.com/it/u=1743459613,3317934319&fm=26&fmt=auto"
+                // },
+                // {
+                //     name: "王大锤加入聊天室"
+                // },
+                // {
+                //     id: 2,
+                //     name: "孙漂亮",
+                //     content: "哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈",
+                //     avatar: "https://img0.baidu.com/it/u=1743459613,3317934319&fm=26&fmt=auto"
+                // },
+                ],
+                userList: [
+                    // {
+                    //     name: "王大锤",
+                    //     avatar: "https://img0.baidu.com/it/u=1743459613,3317934319&fm=26&fmt=auto"
+                    // },
+                    // {
+                    //     name: "王大锤",
+                    //     avatar: "https://img0.baidu.com/it/u=1743459613,3317934319&fm=26&fmt=auto"
+                    // },
+                ],
+                checkIndex: -1,
+                avatarList: [
+                    "https://img2.baidu.com/it/u=729183058,3421751791&fm=253&fmt=auto&app=138&f=JPEG?w=399&h=399",
+                    "https://img0.baidu.com/it/u=3648288340,2344640679&fm=253&fmt=auto&app=138&f=PNG?w=500&h=500",
+                    "https://img0.baidu.com/it/u=1743459613,3317934319&fm=26&fmt=auto",
+                    "https://img2.baidu.com/it/u=3636644726,812052358&fm=26&fmt=auto",
+                    "https://img2.baidu.com/it/u=3324688493,4062391766&fm=253&fmt=auto&app=138&f=JPEG?w=500&h=500",
+                    "https://img0.baidu.com/it/u=2892424948,1952159714&fm=253&fmt=auto&app=120&f=JPEG?w=500&h=500",
+                ],
+            },
+            methods: {
+                // 初始化socket
+                initSocket() {
+                    this.socket.on('hello', data => {
+                        console.log('服务端发来的消息是', data)
+                    })
+                    this.socket.emit('client', { name: "Tom", age: "18" })
+                },
+                // 加入聊天室
+                addRoom() {
+                    if (this.userInfo.nickname === "") return this.$Message.error('请输入昵称');
+                    if (this.userInfo.avatar === "") return this.$Message.error('请选择您的头像');
+                    console.log('addRoom', this.userInfo)
+                    this.isLogin = false,
+                        this.socket.emit('login', this.userInfo)
+                    this.socket.on('join', data => {
+                        this.$Message.success(data);
+                        this.chatList.push(data);
+                    })
+                    this.socket.on('user list', data => {
+                        this.userList = data
+                        console.log('用户列表', this.userList)
+                    })
+                },
+                // 选择头像
+                chooseAvatar(avatar, index) {
+                    this.checkIndex = index;
+                    this.userInfo.avatar = avatar;
+                    console.log('当前头像', this.userInfo.avatar)
+                }
+            },
+            mounted() {
+                this.initSocket()
+            },
+        })
+        // const socket = io()
+        // // 使用on监听事件
+        // socket.on('hello', data => {
+        //     console.log('服务端发来的消息是', data)
+        // })
+        // socket.emit('client', { name: "Tom", age: "18" })
+    </script>
+</body>
+
+</html>
