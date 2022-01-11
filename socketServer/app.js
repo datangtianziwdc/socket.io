@@ -26,8 +26,13 @@ io.on("connection", (socket) => {
     socket.on('login', data => {
         console.log('客户端发来的数据', data)
         userList.push({ ...data, id: socket.id })
-        io.emit('join', { name: data.nickname + '加入聊天室' })
+        io.emit('join', { name: data.nickname + '加入聊天室',id:socket.id })
         io.emit('user list', userList)
+    })
+    socket.on('send message', data => {
+        console.log('客户端发来的消息', data)
+        data.from = "other"
+        socket.broadcast.emit('get message',data)
     })
 });
 

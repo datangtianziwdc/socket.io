@@ -125,6 +125,7 @@
         .chatList .item1 {
             padding-right: 20px;
             display: flex;
+            justify-content: flex-end;
             align-items: flex-start;
             padding-top: 5px;
             padding-bottom: 5px;
@@ -201,7 +202,7 @@
             padding-right: 10px;
             display: flex;
             align-items: center;
-            height: 16%;
+            height: 10%;
             margin-bottom: auto;
             width: 100%;
             justify-content: space-between;
@@ -242,7 +243,7 @@
                     </div>
                     <div class="chatListContainer" ref="chatListRef">
                         <div v-for="(item,index) in chatList">
-                            <template v-if="item.id===2">
+                            <template v-if="item.from === 'other'">
                                 <div class="item">
                                     <image :src="item.avatar" class="avatar">
                                     </image>
@@ -252,7 +253,7 @@
                                     </div>
                                 </div>
                             </template>
-                            <template v-else-if="item.id===1">
+                            <template v-else-if="item.from === 'me'">
                                 <div class="item1">
                                     <div style="display: flex;flex-direction: column;align-items: flex-end;">
                                         <div class="font10">{{item.name}}</div>
@@ -270,8 +271,8 @@
                         </div>
                     </div>
                     <div class="chatListText">
-                        <div style="width: 80%;">
-                            <i-input v-model="chatText" type="textarea" :rows="3" placeholder="请输入..."></i-input>
+                        <div style="width: 80%;height: 90%;">
+                            <i-input v-model="chatText" type="textarea" :rows="2" placeholder="请输入..."></i-input>
                         </div>
                         <div style="width: 15%;">
                             <i-button type="primary" @click="send" style="width: 100%;">发送</i-button>
@@ -286,60 +287,61 @@
         new Vue({
             el: '#app',
             data: {
-                isLogin: false,
+                isLogin: true,
                 socket: io(),
                 userInfo: {
                     nickname: "",
-                    avatar: ""
+                    avatar: "",
+                    id: ""
                 },
                 chatText: "",
                 // 聊天记录
                 chatList: [
-                    {
-                        id: 1,
-                        name: "王大锤",
-                        content: "哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈",
-                        avatar: "https://img0.baidu.com/it/u=1743459613,3317934319&fm=26&fmt=auto"
-                    },
-                    {
-                        name: "王大锤加入聊天室"
-                    },
-                    {
-                        id: 2,
-                        name: "孙漂亮",
-                        content: "哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈",
-                        avatar: "https://img0.baidu.com/it/u=1743459613,3317934319&fm=26&fmt=auto"
-                    },
-                    {
-                        id: 1,
-                        name: "王大锤",
-                        content: "哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈",
-                        avatar: "https://img0.baidu.com/it/u=1743459613,3317934319&fm=26&fmt=auto"
-                    },
-                    {
-                        name: "王大锤加入聊天室"
-                    },
-                    {
-                        id: 2,
-                        name: "孙漂亮",
-                        content: "哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈",
-                        avatar: "https://img0.baidu.com/it/u=1743459613,3317934319&fm=26&fmt=auto"
-                    },
-                    {
-                        id: 1,
-                        name: "王大锤",
-                        content: "哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈",
-                        avatar: "https://img0.baidu.com/it/u=1743459613,3317934319&fm=26&fmt=auto"
-                    },
-                    {
-                        name: "王大锤加入聊天室"
-                    },
-                    {
-                        id: 2,
-                        name: "孙漂亮",
-                        content: "爱上大大大",
-                        avatar: "https://img0.baidu.com/it/u=1743459613,3317934319&fm=26&fmt=auto"
-                    },
+                    // {
+                    //     from: "me",
+                    //     name: "王大锤",
+                    //     content: "哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈",
+                    //     avatar: "https://img0.baidu.com/it/u=1743459613,3317934319&fm=26&fmt=auto"
+                    // },
+                    // {
+                    //     name: "王大锤加入聊天室"
+                    // },
+                    // {
+                    //     from: "other",
+                    //     name: "孙漂亮",
+                    //     content: "哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈",
+                    //     avatar: "https://img0.baidu.com/it/u=1743459613,3317934319&fm=26&fmt=auto"
+                    // },
+                    // {
+                    //     from: "me",
+                    //     name: "王大锤",
+                    //     content: "哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈",
+                    //     avatar: "https://img0.baidu.com/it/u=1743459613,3317934319&fm=26&fmt=auto"
+                    // },
+                    // {
+                    //     name: "王大锤加入聊天室"
+                    // },
+                    // {
+                    //     from: "other",
+                    //     name: "孙漂亮",
+                    //     content: "哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈",
+                    //     avatar: "https://img0.baidu.com/it/u=1743459613,3317934319&fm=26&fmt=auto"
+                    // },
+                    // {
+                    //     from: "me",
+                    //     name: "王大锤",
+                    //     content: "哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈哈",
+                    //     avatar: "https://img0.baidu.com/it/u=1743459613,3317934319&fm=26&fmt=auto"
+                    // },
+                    // {
+                    //     name: "王大锤加入聊天室"
+                    // },
+                    // {
+                    //     from: "other",
+                    //     name: "孙漂亮",
+                    //     content: "爱上大大大",
+                    //     avatar: "https://img0.baidu.com/it/u=1743459613,3317934319&fm=26&fmt=auto"
+                    // },
                 ],
                 userList: [
                     {
@@ -377,12 +379,17 @@
                     this.isLogin = false,
                         this.socket.emit('login', this.userInfo)
                     this.socket.on('join', data => {
+                        console.log('用户socketid', data.id)
                         this.$Message.success(data.name);
                         this.chatList.push(data);
                     })
                     this.socket.on('user list', data => {
                         this.userList = data
                         console.log('用户列表', this.userList)
+                    })
+                    this.socket.on('get message', data => {
+                        this.chatList.push(data)
+                        console.log('get message', data)
                     })
                 },
                 // 选择头像
@@ -393,6 +400,14 @@
                 },
                 // 发送消息
                 send() {
+                    let message = {
+                        name: this.userInfo.nickname,
+                        from: "me",
+                        content: this.chatText,
+                        avatar: this.userInfo.avatar
+                    }
+                    this.socket.emit('send message', message)
+                    this.chatList.push(message)
                     console.log(this.chatText)
                     this.$refs.chatListRef.scrollTop = this.$refs.chatListRef.scrollHeight
                 }
