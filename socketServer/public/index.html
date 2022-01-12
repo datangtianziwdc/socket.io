@@ -232,7 +232,7 @@
                         聊天室成员列表
                     </div>
                     <div v-for="(item,index) in userList" class="item">
-                        <image :src="item.avatar" class="avatar">
+                        <image :src="item.avatar" class="avatar" @click="toUser(item)">
                         </image>
                         <div>{{item.nickname}}</div>
                     </div>
@@ -295,6 +295,7 @@
                     id: ""
                 },
                 chatText: "",
+                privateId: "",
                 // 聊天记录
                 chatList: [
                     // {
@@ -344,14 +345,14 @@
                     // },
                 ],
                 userList: [
-                    {
-                        nickname: "王大锤",
-                        avatar: "https://img0.baidu.com/it/u=1743459613,3317934319&fm=26&fmt=auto"
-                    },
-                    {
-                        nickname: "王大锤",
-                        avatar: "https://img0.baidu.com/it/u=1743459613,3317934319&fm=26&fmt=auto"
-                    },
+                    // {
+                    //     nickname: "王大锤",
+                    //     avatar: "https://img0.baidu.com/it/u=1743459613,3317934319&fm=26&fmt=auto"
+                    // },
+                    // {
+                    //     nickname: "王大锤",
+                    //     avatar: "https://img0.baidu.com/it/u=1743459613,3317934319&fm=26&fmt=auto"
+                    // },
                 ],
                 checkIndex: -1,
                 avatarList: [
@@ -370,6 +371,17 @@
                         console.log('服务端发来的消息是', data)
                     })
                     this.socket.emit('client', { name: "Tom", age: "18" })
+                },
+                // 私聊
+                toUser(item) {
+                    if (item.id === this.socket.id) {
+                        this.$Message.error('不能和自己私聊!');
+                    } else {
+                        this.$Message.success(`和${item.nickname}进行私聊`);
+                        this.chatText = `@${item.nickname}`;
+                        this.privateId = item.id;
+                    }
+                    console.log("我的socket.id", this.socket.id, '点击了', item.nickname, item.id)
                 },
                 // 加入聊天室
                 addRoom() {
@@ -391,6 +403,10 @@
                         this.chatList.push(data)
                         console.log('get message', data)
                     })
+                    // 监听用户离开
+                    this.socket.on('leave', data => {
+                        this.chatList.push(data);
+                    })
                 },
                 // 选择头像
                 chooseAvatar(avatar, index) {
@@ -404,9 +420,11 @@
                         name: this.userInfo.nickname,
                         from: "me",
                         content: this.chatText,
-                        avatar: this.userInfo.avatar
+                        avatar: this.userInfo.avatar,
+                        id: this.privateId
                     }
                     this.socket.emit('send message', message)
+                    this.privateId = "";// 清空私聊对象
                     this.chatList.push(message)
                     console.log(this.chatText)
                     this.$refs.chatListRef.scrollTop = this.$refs.chatListRef.scrollHeight

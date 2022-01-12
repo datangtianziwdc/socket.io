@@ -23,16 +23,36 @@ io.on("connection", (socket) => {
     // socket.on('client', data => {
     //     console.log('客户端发来的数据', data)
     // })
+    // socketObject.emit()可以给指定的socketObject客户端发送广播
+    // socketObject可以从io.sockets.sockets
+    // const id = io.sockets.sockets.get(data.id)
     socket.on('login', data => {
         console.log('客户端发来的数据', data)
         userList.push({ ...data, id: socket.id })
-        io.emit('join', { name: data.nickname + '加入聊天室',id:socket.id })
+        io.emit('join', { name: data.nickname + '加入聊天室', id: socket.id })
         io.emit('user list', userList)
     })
     socket.on('send message', data => {
         console.log('客户端发来的消息', data)
         data.from = "other"
-        socket.broadcast.emit('get message',data)
+        if (data.id == "") {// 不是私聊
+            socket.broadcast.emit('get message', data)
+        } else {// 有socketid，是私聊
+            // 只给指定的socket客户端发送消息
+            const toSocket = io.sockets.sockets.get(data.id)
+            toSocket.emit('get message', data)
+        }
+    })
+    // 关闭连接，disconnect事件自动触发
+    socket.on('disconnect', () => {
+        const user = userList.find(u => socket.id == u.id)
+        console.log('用户关闭连接',user)
+        if(user){
+            userList.splice(userList.findIndex(u => socket.id == u.id),1)
+            io.emit('leave', {name:user.nickname + '离开聊天室'})
+            // 发送最新的用户列表
+            io.emit('user list', userList)
+        }
     })
 });
 
